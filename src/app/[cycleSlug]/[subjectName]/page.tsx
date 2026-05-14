@@ -97,9 +97,10 @@ export default function StudentReportPage({
               <thead>
                 <tr>
                   <th>Estudiante</th>
-                  <th style={{ textAlign: 'center' }}>Asistencias</th>
-                  <th style={{ textAlign: 'center' }}>Faltas</th>
-                  <th style={{ textAlign: 'center' }}>Porcentaje</th>
+                  <th style={{ textAlign: 'center' }}>P. I (1-8)</th>
+                  <th style={{ textAlign: 'center' }}>P. II (9-16)</th>
+                  <th style={{ textAlign: 'center' }}>Total</th>
+                  <th style={{ textAlign: 'center' }}>Asistencia %</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,8 +117,25 @@ export default function StudentReportPage({
                         </div>
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center', fontWeight: 600, color: 'var(--accent)' }}>{student.attended}</td>
-                    <td style={{ textAlign: 'center', color: 'var(--danger)' }}>{student.total - student.attended}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontWeight: 600, 
+                        color: student.p1.percentage === '-' ? 'var(--text-muted)' : (parseFloat(student.p1.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)') 
+                      }}>
+                        {student.p1.percentage}
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p1.attended}/{student.p1.total}</div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontWeight: 600, 
+                        color: student.p2.percentage === '-' ? 'var(--text-muted)' : (parseFloat(student.p2.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)') 
+                      }}>
+                        {student.p2.percentage}
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p2.attended}/{student.p2.total}</div>
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 600 }}>{student.attended}/{student.total}</td>
                     <td style={{ textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
                         <div style={{ width: '4rem', height: '0.4rem', background: 'rgba(255,255,255,0.1)', borderRadius: '1rem', overflow: 'hidden' }}>

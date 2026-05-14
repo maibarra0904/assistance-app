@@ -203,9 +203,15 @@ export default function AdminAttendancePage() {
           <button onClick={handleLogout} className="btn" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
             <LogOut size={18} />
           </button>
-          <div className="card glass" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Calendar size={18} color="var(--primary)" />
-            <span style={{ fontWeight: 600 }}>Semana {currentWeek}</span>
+          <div className="card glass" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Calendar size={18} color="var(--primary)" />
+              <span style={{ fontWeight: 600 }}>Semana {currentWeek}</span>
+            </div>
+            <div style={{ width: '1px', height: '1rem', background: 'var(--border)' }}></div>
+            <div style={{ color: currentWeek <= 8 ? 'var(--accent)' : 'var(--primary)', fontWeight: 700, fontSize: '0.85rem' }}>
+              PARCIAL {currentWeek <= 8 ? 'I' : 'II'}
+            </div>
           </div>
         </div>
       </header>
