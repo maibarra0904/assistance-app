@@ -79,8 +79,8 @@ export async function GET(
         attended: attendedCount,
         total: totalClasses,
         percentage: totalClasses > 0 ? ((attendedCount / totalClasses) * 100).toFixed(2) + '%' : '0.00%',
-        p1: { attended: attendedP1, total: totalP1, percentage: totalP1 > 0 ? ((attendedP1 / totalP1) * 100).toFixed(2) + '%' : '0.00%' },
-        p2: { attended: attendedP2, total: totalP2, percentage: totalP2 > 0 ? ((attendedP2 / totalP2) * 100).toFixed(2) + '%' : '0.00%' },
+        p1: { attended: attendedP1, total: totalP1, percentage: totalP1 > 0 ? ((attendedP1 / totalP1) * 100).toFixed(2) + '%' : '-' },
+        p2: { attended: attendedP2, total: totalP2, percentage: totalP2 > 0 ? ((attendedP2 / totalP2) * 100).toFixed(2) + '%' : '-' },
         history
       };
     });

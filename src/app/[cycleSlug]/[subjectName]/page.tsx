@@ -118,11 +118,21 @@ export default function StudentReportPage({
                       </div>
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      <div style={{ fontWeight: 600, color: parseFloat(student.p1.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)' }}>{student.p1.percentage}</div>
+                      <div style={{ 
+                        fontWeight: 600, 
+                        color: student.p1.percentage === '-' ? 'var(--text-muted)' : (parseFloat(student.p1.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)') 
+                      }}>
+                        {student.p1.percentage}
+                      </div>
                       <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p1.attended}/{student.p1.total}</div>
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      <div style={{ fontWeight: 600, color: parseFloat(student.p2.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)' }}>{student.p2.percentage}</div>
+                      <div style={{ 
+                        fontWeight: 600, 
+                        color: student.p2.percentage === '-' ? 'var(--text-muted)' : (parseFloat(student.p2.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)') 
+                      }}>
+                        {student.p2.percentage}
+                      </div>
                       <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p2.attended}/{student.p2.total}</div>
                     </td>
                     <td style={{ textAlign: 'center', fontWeight: 600 }}>{student.attended}/{student.total}</td>

@@ -214,13 +214,19 @@ export default function ReportsPage() {
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{student.cedula}</div>
                         </td>
                         <td style={{ textAlign: 'center' }}>
-                          <span style={{ color: parseFloat(student.p1.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>
+                          <span style={{ 
+                            color: student.p1.percentage === '-' ? 'var(--text-muted)' : (parseFloat(student.p1.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)'), 
+                            fontWeight: 600 
+                          }}>
                             {student.p1.percentage}
                           </span>
                           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p1.attended}/{student.p1.total}</div>
                         </td>
                         <td style={{ textAlign: 'center' }}>
-                          <span style={{ color: parseFloat(student.p2.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>
+                          <span style={{ 
+                            color: student.p2.percentage === '-' ? 'var(--text-muted)' : (parseFloat(student.p2.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)'), 
+                            fontWeight: 600 
+                          }}>
                             {student.p2.percentage}
                           </span>
                           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p2.attended}/{student.p2.total}</div>
