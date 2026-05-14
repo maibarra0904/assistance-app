@@ -200,8 +200,9 @@ export default function ReportsPage() {
                   <thead>
                     <tr>
                       <th>Estudiante</th>
-                      <th style={{ textAlign: 'center' }}>Clases Asistidas</th>
-                      <th style={{ textAlign: 'center' }}>Total Clases</th>
+                      <th style={{ textAlign: 'center' }}>P. I (8 sem)</th>
+                      <th style={{ textAlign: 'center' }}>P. II (16 sem)</th>
+                      <th style={{ textAlign: 'center' }}>Total</th>
                       <th style={{ textAlign: 'center' }}>Porcentaje</th>
                     </tr>
                   </thead>
@@ -212,8 +213,19 @@ export default function ReportsPage() {
                           <div style={{ fontWeight: 600 }}>{student.name}</div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{student.cedula}</div>
                         </td>
-                        <td style={{ textAlign: 'center' }}>{student.attended}</td>
-                        <td style={{ textAlign: 'center' }}>{student.total}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span style={{ color: parseFloat(student.p1.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>
+                            {student.p1.percentage}
+                          </span>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p1.attended}/{student.p1.total}</div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span style={{ color: parseFloat(student.p2.percentage) >= 70 ? 'var(--accent)' : 'var(--danger)', fontWeight: 600 }}>
+                            {student.p2.percentage}
+                          </span>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{student.p2.attended}/{student.p2.total}</div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>{student.attended}/{student.total}</td>
                         <td style={{ textAlign: 'center' }}>
                           <span style={{ 
                             padding: '0.25rem 0.75rem', 
