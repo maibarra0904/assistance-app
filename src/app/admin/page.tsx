@@ -64,29 +64,6 @@ export default function AdminAttendancePage() {
     localStorage.removeItem('admin_auth');
   };
 
-  // Save selections to localStorage
-  useEffect(() => {
-    if (selectedCycle) {
-      localStorage.setItem('selected_cycle', selectedCycle);
-    } else {
-      localStorage.removeItem('selected_cycle');
-    }
-  }, [selectedCycle]);
-
-  useEffect(() => {
-    if (selectedSubject) {
-      localStorage.setItem('selected_subject', selectedSubject);
-    } else {
-      localStorage.removeItem('selected_subject');
-    }
-  }, [selectedSubject]);
-
-  useEffect(() => {
-    if (currentWeek) {
-      localStorage.setItem('selected_week', currentWeek.toString());
-    }
-  }, [currentWeek]);
-
   // Fetch cycles on mount
   useEffect(() => {
     if (!isAuthorized) return;
@@ -130,8 +107,10 @@ export default function AdminAttendancePage() {
           setSelectedSubject(savedSubject);
         } else if (data.length > 0) {
           setSelectedSubject(data[0].id);
+          localStorage.setItem('selected_subject', data[0].id);
         } else {
           setSelectedSubject(null);
+          localStorage.removeItem('selected_subject');
         }
       }
       setLoading(false);
@@ -265,7 +244,10 @@ export default function AdminAttendancePage() {
                   className="btn" 
                   style={{ background: 'var(--bg-main)', color: 'white', border: '1px solid var(--border)', flex: 1 }} 
                   value={selectedCycle} 
-                  onChange={(e) => setSelectedCycle(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedCycle(e.target.value);
+                    localStorage.setItem('selected_cycle', e.target.value);
+                  }}
                 >
                   {availableCycles.map(c => <option key={c.id} value={c.id}>{c.id}</option>)}
                 </select>
@@ -282,7 +264,15 @@ export default function AdminAttendancePage() {
 
             <div style={{ flex: 1, minWidth: '300px' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Asignatura</label>
-              <select className="btn" style={{ width: '100%', background: 'var(--bg-main)', color: 'white', border: '1px solid var(--border)' }} value={selectedSubject || ''} onChange={(e) => setSelectedSubject(e.target.value)}>
+              <select 
+                className="btn" 
+                style={{ width: '100%', background: 'var(--bg-main)', color: 'white', border: '1px solid var(--border)' }} 
+                value={selectedSubject || ''} 
+                onChange={(e) => {
+                  setSelectedSubject(e.target.value);
+                  localStorage.setItem('selected_subject', e.target.value);
+                }}
+              >
                 {subjects.map(s => <option key={s.id} value={s.id}>{toTitleCase(s.name)}</option>)}
                 {subjects.length === 0 && <option value="">No hay materias en este ciclo</option>}
               </select>
@@ -294,11 +284,35 @@ export default function AdminAttendancePage() {
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={() => setCurrentWeek(w => Math.max(1, w - 1))}><ChevronLeft size={20} /></button>
+              <button 
+                className="btn btn-primary" 
+                style={{ padding: '0.75rem' }} 
+                onClick={() => {
+                  setCurrentWeek(w => {
+                    const newWeek = Math.max(1, w - 1);
+                    localStorage.setItem('selected_week', newWeek.toString());
+                    return newWeek;
+                  });
+                }}
+              >
+                <ChevronLeft size={20} />
+              </button>
               <div style={{ textAlign: 'center', minWidth: '100px' }}>
                 <div style={{ fontSize: '1rem', fontWeight: 700 }}>Semana {currentWeek}</div>
               </div>
-              <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={() => setCurrentWeek(w => Math.min(16, w + 1))}><ChevronRight size={20} /></button>
+              <button 
+                className="btn btn-primary" 
+                style={{ padding: '0.75rem' }} 
+                onClick={() => {
+                  setCurrentWeek(w => {
+                    const newWeek = Math.min(16, w + 1);
+                    localStorage.setItem('selected_week', newWeek.toString());
+                    return newWeek;
+                  });
+                }}
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {saving && <span style={{ fontSize: '0.75rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><RefreshCcw size={12} className="animate-spin" /> Guardando...</span>}
