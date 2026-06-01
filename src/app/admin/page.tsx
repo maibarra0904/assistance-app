@@ -22,7 +22,11 @@ import {
   RefreshCcw,
   FileText,
   Lock,
-  LogOut
+  LogOut,
+  Trash2,
+  Plus,
+  X,
+  Bell
 } from 'lucide-react';
 
 export default function AdminAttendancePage() {
@@ -41,6 +45,13 @@ export default function AdminAttendancePage() {
   const [attendanceData, setAttendanceData] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const [activities, setActivities] = useState<any[]>([]);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [selectedDateForActivity, setSelectedDateForActivity] = useState<Date | null>(null);
+  const [activityTitle, setActivityTitle] = useState('');
+  const [activityDescription, setActivityDescription] = useState('');
+  const [savingActivity, setSavingActivity] = useState(false);
 
   // Simple authentication check
   useEffect(() => {
@@ -132,9 +143,13 @@ export default function AdminAttendancePage() {
     const startDateStr = formatDate(dates[0]);
     const endDateStr = formatDate(dates[6]);
     const { data: attData } = await supabase.from('attendance').select('*').eq('subject_id', subjectId).gte('attendance_date', startDateStr).lte('attendance_date', endDateStr);
+    const { data: actData } = await supabase.from('activities').select('*').eq('subject_id', subjectId).gte('activity_date', startDateStr).lte('activity_date', endDateStr);
 
     if (studentsData) setStudents(studentsData.map((s: any) => s.students));
     if (scheduleData) setSchedule(scheduleData);
+    if (actData) setActivities(actData);
+    else setActivities([]);
+    
     const attMap: Record<string, boolean> = {};
     attData?.forEach((record: any) => { attMap[`${record.student_id}_${record.attendance_date}`] = record.is_present; });
     setAttendanceData(attMap);
@@ -159,6 +174,66 @@ export default function AdminAttendancePage() {
     }, { onConflict: 'student_id,subject_id,attendance_date' });
     if (error) setAttendanceData(prev => ({ ...prev, [key]: !newStatus }));
     setSaving(false);
+  };
+
+  const openActivityModal = (date: Date) => {
+    const dateStr = formatDate(date);
+    const existing = activities.find(a => a.activity_date === dateStr);
+    setSelectedDateForActivity(date);
+    setActivityTitle(existing ? existing.title : '');
+    setActivityDescription(existing ? existing.description || '' : '');
+    setIsActivityModalOpen(true);
+  };
+
+  const handleSaveActivity = async () => {
+    if (!selectedDateForActivity || !selectedSubject) return;
+    const dateStr = formatDate(selectedDateForActivity);
+    setSavingActivity(true);
+    
+    const { data, error } = await supabase
+      .from('activities')
+      .upsert({
+        subject_id: selectedSubject,
+        activity_date: dateStr,
+        title: activityTitle,
+        description: activityDescription
+      }, { onConflict: 'subject_id,activity_date' })
+      .select();
+
+    if (error) {
+      alert('Error al guardar la actividad: ' + error.message);
+    } else {
+      setActivities(prev => {
+        const filtered = prev.filter(a => a.activity_date !== dateStr);
+        if (data && data[0]) {
+          return [...filtered, data[0]];
+        }
+        return filtered;
+      });
+      setIsActivityModalOpen(false);
+    }
+    setSavingActivity(false);
+  };
+
+  const handleDeleteActivity = async (date: Date) => {
+    if (!selectedSubject) return;
+    const dateStr = formatDate(date);
+    if (!confirm('¿Estás seguro de que deseas eliminar la actividad registrada para esta fecha?')) return;
+    
+    setSavingActivity(true);
+    const { error } = await supabase
+      .from('activities')
+      .delete()
+      .eq('subject_id', selectedSubject)
+      .eq('activity_date', dateStr);
+
+    if (error) {
+      alert('Error al eliminar la actividad: ' + error.message);
+    } else {
+      setActivities(prev => prev.filter(a => a.activity_date !== dateStr));
+      setIsActivityModalOpen(false);
+    }
+    setSavingActivity(false);
   };
 
   const weekDates = getDatesForWeek(currentWeek);
@@ -228,6 +303,86 @@ export default function AdminAttendancePage() {
           </div>
         </div>
       </header>
+
+      {(() => {
+        // Helper to convert database date string (UTC) to a local Date object matching the calendar view
+        const getLocalCalendarDate = (dbDateStr: string) => {
+          const utcDate = new Date(dbDateStr + 'T00:00:00.000Z');
+          return new Date(utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate());
+        };
+
+        const today = new Date();
+        const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        const visibleActivities = activities.filter(act => {
+          const actLocalDate = getLocalCalendarDate(act.activity_date);
+          return localToday >= actLocalDate;
+        });
+        
+        if (visibleActivities.length === 0) return null;
+
+        return (
+          <div className="card glass animate-fade" style={{ 
+            marginBottom: '2rem', 
+            border: '1px dashed var(--primary)', 
+            background: 'rgba(99, 102, 241, 0.05)', 
+            padding: '1.5rem',
+            borderRadius: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{ 
+              background: 'rgba(99, 102, 241, 0.1)', 
+              color: 'var(--primary)', 
+              padding: '0.75rem', 
+              borderRadius: '0.75rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
+            }}>
+              <Bell size={24} style={{ animation: 'bounce 2s infinite' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                Recordatorio de Revisión de Actividades
+              </h3>
+              <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                Esta semana tiene las siguientes actividades registradas para revisión:
+              </p>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+                {visibleActivities.map(act => {
+                  const actDate = getLocalCalendarDate(act.activity_date);
+                  const daySpan = DAYS_SPANISH[actDate.getDay()];
+                  return (
+                    <div 
+                      key={act.id} 
+                      onClick={() => openActivityModal(actDate)}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.03)', 
+                        border: '1px solid var(--border)', 
+                        padding: '0.5rem 1rem', 
+                        borderRadius: '0.5rem', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.85rem',
+                        transition: 'all 0.2s'
+                      }}
+                      className="hover-bright"
+                    >
+                      <BookOpen size={14} color="var(--primary)" />
+                      <span style={{ fontWeight: 600 }}>{daySpan}:</span>
+                      <span style={{ color: 'rgba(255,255,255,0.9)' }}>{act.title}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <main>
         <div className="card glass" style={{ marginBottom: '2rem' }}>
@@ -307,9 +462,41 @@ export default function AdminAttendancePage() {
                 <tr>
                   <th style={{ width: '300px' }}>Estudiante</th>
                   {daysToDisplay.map(date => (
-                    <th key={date.toISOString()} style={{ textAlign: 'center' }}>
-                      <div>{DAYS_SPANISH[date.getDay()]}</div>
-                      <div style={{ fontSize: '0.65rem', fontWeight: 400 }}>{date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</div>
+                    <th key={date.toISOString()} style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                        <div>{DAYS_SPANISH[date.getDay()]}</div>
+                        <div style={{ fontSize: '0.65rem', fontWeight: 400 }}>{date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</div>
+                        {/* Interactive Activity Icon */}
+                        {(() => {
+                          const dateStr = formatDate(date);
+                          const hasActivity = activities.some(a => a.activity_date === dateStr);
+                          const activity = activities.find(a => a.activity_date === dateStr);
+                          return (
+                            <button
+                              onClick={() => openActivityModal(date)}
+                              style={{
+                                background: hasActivity ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                                border: hasActivity ? '1px solid rgba(99, 102, 241, 0.3)' : '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '0.375rem',
+                                color: hasActivity ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
+                                padding: '0.2rem 0.5rem',
+                                marginTop: '0.25rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                fontSize: '0.65rem',
+                                transition: 'all 0.2s',
+                              }}
+                              className="activity-indicator"
+                              title={hasActivity ? `Actividad: ${activity.title} (Clic para editar)` : 'Registrar actividad para esta fecha'}
+                            >
+                              <BookOpen size={10} color={hasActivity ? 'var(--primary)' : 'rgba(255,255,255,0.4)'} />
+                              <span>{hasActivity ? 'Actividad' : '+ Tarea'}</span>
+                            </button>
+                          );
+                        })()}
+                      </div>
                     </th>
                   ))}
                 </tr>
@@ -344,9 +531,173 @@ export default function AdminAttendancePage() {
           </div>
         )}
       </main>
+
+      {/* Modal para Registrar/Editar Actividad */}
+      {isActivityModalOpen && selectedDateForActivity && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }} className="animate-fade">
+          <div className="card glass" style={{
+            width: '100%',
+            maxWidth: '500px',
+            padding: '2rem',
+            border: '1px solid var(--border)',
+            position: 'relative'
+          }}>
+            <button 
+              onClick={() => setIsActivityModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <div style={{
+                background: 'rgba(99, 102, 241, 0.1)',
+                color: 'var(--primary)',
+                padding: '0.5rem',
+                borderRadius: '0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <BookOpen size={24} />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', margin: 0 }}>
+                  Actividad Académica
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>
+                  {DAYS_SPANISH[selectedDateForActivity.getDay()]} • {selectedDateForActivity.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Título de la Actividad / Tarea
+                </label>
+                <input 
+                  type="text" 
+                  className="btn" 
+                  style={{
+                    width: '100%',
+                    background: 'rgba(0,0,0,0.2)',
+                    border: '1px solid var(--border)',
+                    color: 'white',
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    cursor: 'text'
+                  }}
+                  placeholder="Ej. Tarea 1: Resolución de derivadas"
+                  value={activityTitle}
+                  onChange={(e) => setActivityTitle(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Descripción / Instrucciones (Opcional)
+                </label>
+                <textarea 
+                  className="btn" 
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    background: 'rgba(0,0,0,0.2)',
+                    border: '1px solid var(--border)',
+                    color: 'white',
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    cursor: 'text',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
+                  placeholder="Ej. Entregar en formato PDF. Revisar que tenga firma del representante."
+                  value={activityDescription}
+                  onChange={(e) => setActivityDescription(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+                {activities.some(a => a.activity_date === formatDate(selectedDateForActivity)) && (
+                  <button
+                    onClick={() => handleDeleteActivity(selectedDateForActivity)}
+                    disabled={savingActivity}
+                    className="btn"
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      color: 'var(--danger)',
+                      marginRight: 'auto'
+                    }}
+                  >
+                    <Trash2 size={16} /> Eliminar
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setIsActivityModalOpen(false)}
+                  disabled={savingActivity}
+                  className="btn"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-muted)'
+                  }}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  onClick={handleSaveActivity}
+                  disabled={savingActivity || !activityTitle.trim()}
+                  className="btn btn-primary"
+                >
+                  {savingActivity ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .hover-bright:hover {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-color: rgba(99, 102, 241, 0.5) !important;
+          transform: translateY(-1px);
+        }
+        .activity-indicator:hover {
+          background: rgba(99, 102, 241, 0.25) !important;
+          border-color: var(--primary) !important;
+          color: white !important;
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
       `}</style>
     </div>
   );
