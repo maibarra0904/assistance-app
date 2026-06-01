@@ -46,6 +46,8 @@ export default function AdminAttendancePage() {
   useEffect(() => {
     const auth = localStorage.getItem('admin_auth');
     if (auth === 'true') setIsAuthorized(true);
+    // Clear lingering selected_week so it does not persist across reloads
+    localStorage.removeItem('selected_week');
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -79,13 +81,7 @@ export default function AdminAttendancePage() {
       }
     }
     fetchCycles();
-    
-    const savedWeek = localStorage.getItem('selected_week');
-    if (savedWeek) {
-      setCurrentWeek(parseInt(savedWeek, 10));
-    } else {
-      setCurrentWeek(getWeekAndPartial(new Date()).week);
-    }
+    setCurrentWeek(getWeekAndPartial(new Date()).week);
   }, [isAuthorized]);
 
   // Fetch subjects when cycle changes
@@ -284,35 +280,11 @@ export default function AdminAttendancePage() {
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button 
-                className="btn btn-primary" 
-                style={{ padding: '0.75rem' }} 
-                onClick={() => {
-                  setCurrentWeek(w => {
-                    const newWeek = Math.max(1, w - 1);
-                    localStorage.setItem('selected_week', newWeek.toString());
-                    return newWeek;
-                  });
-                }}
-              >
-                <ChevronLeft size={20} />
-              </button>
+              <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={() => setCurrentWeek(w => Math.max(1, w - 1))}><ChevronLeft size={20} /></button>
               <div style={{ textAlign: 'center', minWidth: '100px' }}>
                 <div style={{ fontSize: '1rem', fontWeight: 700 }}>Semana {currentWeek}</div>
               </div>
-              <button 
-                className="btn btn-primary" 
-                style={{ padding: '0.75rem' }} 
-                onClick={() => {
-                  setCurrentWeek(w => {
-                    const newWeek = Math.min(16, w + 1);
-                    localStorage.setItem('selected_week', newWeek.toString());
-                    return newWeek;
-                  });
-                }}
-              >
-                <ChevronRight size={20} />
-              </button>
+              <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={() => setCurrentWeek(w => Math.min(16, w + 1))}><ChevronRight size={20} /></button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {saving && <span style={{ fontSize: '0.75rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><RefreshCcw size={12} className="animate-spin" /> Guardando...</span>}
