@@ -163,6 +163,7 @@ export default function AdminAttendancePage() {
   }, [isAuthorized, selectedSubject, currentWeek, fetchSubjectData]);
 
   const toggleAttendance = async (studentId: string, date: Date) => {
+    if (currentWeek === 8 || currentWeek === 16) return;
     const dateStr = formatDate(date);
     const key = `${studentId}_${dateStr}`;
     const newStatus = !attendanceData[key];
@@ -454,6 +455,40 @@ export default function AdminAttendancePage() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10rem 0', gap: '1rem' }}>
             <Loader2 size={48} className="animate-spin" color="var(--primary)" />
             <p style={{ color: 'var(--text-muted)' }}>Cargando...</p>
+          </div>
+        ) : (currentWeek === 8 || currentWeek === 16) ? (
+          <div className="card glass animate-fade" style={{ 
+            padding: '4rem 2rem', 
+            textAlign: 'center', 
+            border: '1px solid rgba(239, 68, 68, 0.2)', 
+            background: 'rgba(239, 68, 68, 0.02)',
+            borderRadius: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.5rem',
+            maxWidth: '600px',
+            margin: '2rem auto'
+          }}>
+            <div style={{ 
+              background: 'rgba(239, 68, 68, 0.1)', 
+              color: 'var(--danger)', 
+              padding: '1.25rem', 
+              borderRadius: '50%', 
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center' 
+            }}>
+              <Calendar size={40} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'white', marginBottom: '0.5rem' }}>
+                Semana {currentWeek}: Evaluaciones del Parcial {currentWeek === 8 ? 'I' : 'II'}
+              </h2>
+              <p style={{ color: 'var(--text-muted)', maxWidth: '500px', fontSize: '0.95rem', lineHeight: '1.6', margin: '0 auto' }}>
+                Esta semana corresponde al período oficial de exámenes. El registro de asistencia no aplica ni se encuentra habilitado para este lapso académico.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="card glass table-container animate-fade">
