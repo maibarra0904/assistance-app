@@ -64,6 +64,29 @@ export default function AdminAttendancePage() {
     localStorage.removeItem('admin_auth');
   };
 
+  // Save selections to localStorage
+  useEffect(() => {
+    if (selectedCycle) {
+      localStorage.setItem('selected_cycle', selectedCycle);
+    } else {
+      localStorage.removeItem('selected_cycle');
+    }
+  }, [selectedCycle]);
+
+  useEffect(() => {
+    if (selectedSubject) {
+      localStorage.setItem('selected_subject', selectedSubject);
+    } else {
+      localStorage.removeItem('selected_subject');
+    }
+  }, [selectedSubject]);
+
+  useEffect(() => {
+    if (currentWeek) {
+      localStorage.setItem('selected_week', currentWeek.toString());
+    }
+  }, [currentWeek]);
+
   // Fetch cycles on mount
   useEffect(() => {
     if (!isAuthorized) return;
@@ -72,12 +95,20 @@ export default function AdminAttendancePage() {
       const { data } = await supabase.from('academic_cycles').select('*').order('id', { ascending: false });
       if (data) {
         setAvailableCycles(data);
-        const defaultCycle = data.find(c => c.is_default) || data[0];
+        const savedCycle = localStorage.getItem('selected_cycle');
+        const cycleExists = data.some(c => c.id === savedCycle);
+        const defaultCycle = (cycleExists && savedCycle) ? data.find(c => c.id === savedCycle) : (data.find(c => c.is_default) || data[0]);
         if (defaultCycle) setSelectedCycle(defaultCycle.id);
       }
     }
     fetchCycles();
-    setCurrentWeek(getWeekAndPartial(new Date()).week);
+    
+    const savedWeek = localStorage.getItem('selected_week');
+    if (savedWeek) {
+      setCurrentWeek(parseInt(savedWeek, 10));
+    } else {
+      setCurrentWeek(getWeekAndPartial(new Date()).week);
+    }
   }, [isAuthorized]);
 
   // Fetch subjects when cycle changes
@@ -93,8 +124,15 @@ export default function AdminAttendancePage() {
         .order('name');
       if (data) {
         setSubjects(data);
-        if (data.length > 0) setSelectedSubject(data[0].id);
-        else setSelectedSubject(null);
+        const savedSubject = localStorage.getItem('selected_subject');
+        const subjectExists = data.some(s => s.id === savedSubject);
+        if (subjectExists && savedSubject) {
+          setSelectedSubject(savedSubject);
+        } else if (data.length > 0) {
+          setSelectedSubject(data[0].id);
+        } else {
+          setSelectedSubject(null);
+        }
       }
       setLoading(false);
     }
