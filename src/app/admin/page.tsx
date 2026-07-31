@@ -163,7 +163,7 @@ export default function AdminAttendancePage() {
   }, [isAuthorized, selectedSubject, currentWeek, fetchSubjectData]);
 
   const toggleAttendance = async (studentId: string, date: Date) => {
-    if (currentWeek === 8 || currentWeek === 16) return;
+    if (currentWeek === 8 || currentWeek === 17) return;
     const dateStr = formatDate(date);
     const key = `${studentId}_${dateStr}`;
     const newStatus = !attendanceData[key];
@@ -440,7 +440,7 @@ export default function AdminAttendancePage() {
               <div style={{ textAlign: 'center', minWidth: '100px' }}>
                 <div style={{ fontSize: '1rem', fontWeight: 700 }}>Semana {currentWeek}</div>
               </div>
-              <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={() => setCurrentWeek(w => Math.min(16, w + 1))}><ChevronRight size={20} /></button>
+              <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={() => setCurrentWeek(w => Math.min(17, w + 1))}><ChevronRight size={20} /></button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {saving && <span style={{ fontSize: '0.75rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><RefreshCcw size={12} className="animate-spin" /> Guardando...</span>}
@@ -456,7 +456,7 @@ export default function AdminAttendancePage() {
             <Loader2 size={48} className="animate-spin" color="var(--primary)" />
             <p style={{ color: 'var(--text-muted)' }}>Cargando...</p>
           </div>
-        ) : (currentWeek === 8 || currentWeek === 16) ? (
+        ) : (currentWeek === 8 || currentWeek === 17) ? (
           <div className="card glass animate-fade" style={{ 
             padding: '4rem 2rem', 
             textAlign: 'center', 

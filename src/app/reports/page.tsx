@@ -201,7 +201,7 @@ export default function ReportsPage() {
                     <tr>
                       <th>Estudiante</th>
                       <th style={{ textAlign: 'center' }}>P. I (8 sem)</th>
-                      <th style={{ textAlign: 'center' }}>P. II (16 sem)</th>
+                      <th style={{ textAlign: 'center' }}>P. II (17 sem)</th>
                       <th style={{ textAlign: 'center' }}>Total</th>
                       <th style={{ textAlign: 'center' }}>Porcentaje</th>
                     </tr>

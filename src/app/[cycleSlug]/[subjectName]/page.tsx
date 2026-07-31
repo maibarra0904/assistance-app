@@ -98,7 +98,7 @@ export default function StudentReportPage({
                 <tr>
                   <th>Estudiante</th>
                   <th style={{ textAlign: 'center' }}>P. I (1-8)</th>
-                  <th style={{ textAlign: 'center' }}>P. II (9-16)</th>
+                  <th style={{ textAlign: 'center' }}>P. II (9-17)</th>
                   <th style={{ textAlign: 'center' }}>Total</th>
                   <th style={{ textAlign: 'center' }}>Asistencia %</th>
                 </tr>

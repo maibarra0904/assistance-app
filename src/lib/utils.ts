@@ -10,7 +10,7 @@ export function getWeekAndPartial(date: Date) {
   const week = Math.ceil(diffDays / 7) || 1;
   const partial = week <= 8 ? 1 : 2;
   
-  return { week: Math.min(week, 16), partial };
+  return { week: Math.min(week, 17), partial };
 }
 
 export function getDatesForWeek(week: number) {
